@@ -13,6 +13,7 @@ class ProductSearch:
         self.options.add_argument('--ignore-certificate-errors')
         self.driver = webdriver.Chrome(options=self.options)
 
+<<<<<<< Updated upstream
     def data_search(self, url, selector):
         self.driver.get(url)
         source_code = self.driver.page_source
@@ -28,6 +29,32 @@ class ProductSearch:
 
     def nymag_search(self):
         nymag_product_name = self.data_search(self.nymag_url.format(self.product_name), 'a.product-buy-link span')
+=======
+    def data_search(self, url, xpath):
+        try:
+            self.driver.get(url)
+            
+            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/section[6]/section[1]/article/section/div[1]/section[2]/div[2]/div[1]/div[1]"))) 
+            soup = BeautifulSoup(source_code, 'html5lib')
+            
+            # Use the provided CSS selector to find the desired <div> element
+            product_name = self.driver.find_element(By.XPATH, "/html/body/section[6]/section[1]/article/section/div[1]/section[2]/div[2]/div[1]/div[1]")
+            
+            # Now you can do something with the product_name_element
+            if product_name_element:
+                # Process or extract data from the selected element
+                # For example, printing the text content of the element
+                product_name = product_name_element.text.strip()
+                return product_name
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        return None
+
+    def nymag_search(self):
+        # Update the XPath based on the actual structure of the webpage
+        xpath = "//div[@class='product-name']//a[@class='product-buy-link']//span"
+        nymag_product_name = self.data_search(self.nymag_url.format(self.product_name), xpath)
+>>>>>>> Stashed changes
         self.save_results(nymag_product_name)
 
     def save_results(self, product_name):
@@ -36,8 +63,12 @@ class ProductSearch:
             df.to_excel(r'C:\Users\12078\OneDrive\Desktop\product_list.xlsx', index=False)
             print("Data has been successfully saved to the Excel file.")
         except Exception as e:
+<<<<<<< Updated upstream
             print(f"An error occurred: {e}")
         self.driver.quit()
+=======
+            print(f"An error occurred in save_results: {e}")
+>>>>>>> Stashed changes
 
 # Example usage:
 user_input = input("Enter the product name: ")
