@@ -47,24 +47,34 @@ class WirecutterScraper(ReviewScraper):
     def scrape(self):
         super().scrape('h3', '_12e81b7a', 'div', '_24c5e6a6 product-pricebox-1')
 
-class ConsumerReportsScraper(ReviewScraper):
+class BestProductsScraper(ReviewScraper):
     def scrape(self):
-        
+        super().scrape('h2', 'css-1s0pzvh e8seki10', 'div', 'size-large css-1srh9ry e1a1omje0')
+
+class ForbesScraper(ReviewScraper):
+    def scrape(self):
+        super().scrape('h3', 'finds-module-title', 'div', 'fbs-pricing__regular-price')
 
 class ProductSearch:
     def __init__(self, name):
         self.name = name
-        self.nymag_scraper = NymagScraper(name, "NY Mag")
         self.wirecutter_scraper = WirecutterScraper(name, "Wirecutter")
+        self.best_products_scraper = BestProductsScraper(name, "bestproducts.com")
+        self.forbes_scraper = ForbesScraper(name, "forbes")
+        self.nymag_scraper = NymagScraper(name, "NY Mag")
 
     def search(self):
-        self.nymag_scraper.scrape()
         self.wirecutter_scraper.scrape()
+        self.best_products_scraper.scrape()
+        self.forbes_scraper.scrape()
+        self.nymag_scraper.scrape()
 
     def display_info(self):
         print(f"Product: {self.name}")
-        self.nymag_scraper.display_info()
         self.wirecutter_scraper.display_info()
+        self.best_products_scraper.display_info()
+        self.forbes_scraper.display_info()
+        self.nymag_scraper.display_info()
 
 product_name = input("Enter a product name: ")
 product_search = ProductSearch(product_name)
