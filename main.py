@@ -1,46 +1,78 @@
-import requests
+import requests  
 from bs4 import BeautifulSoup
-from selenium import webdriver
-import pandas as pd
+from googlesearch import search
+
+class ReviewScraper:
+    def __init__(self, name, website):
+        self.name = name
+        self.website = website
+        self.best_product = None
+        self.product_price = None
+
+    def scrape(self):
+        raise NotImplementedError("Subclass must implement abstract method")
+
+    def display_info(self):
+        if self.best_product is not None:
+            first_line = self.best_product.split('\n')[0]
+            print(f"According to {self.website}: {first_line}")
+        else:
+            print(f"No information found on {self.website}")
+        if self.product_price is not None:
+            print(f"Price: {self.product_price}")
+        else:
+            print("No price information available")
+
+class NymagScraper(ReviewScraper):
+    def scrape(self):
+        nymag_url = f'https://nymag.com/strategist/article/best-{self.name}.html'
+        response = requests.get(nymag_url)
+        soup = BeautifulSoup(response.text, 'lxml')
+
+        product_name_element = soup.find('div', class_='product-name')
+        product_price_element = soup.find('span', class_='product-buy-price')
+
+        if product_name_element:
+            self.best_product = product_name_element.text.strip()
+
+        if product_price_element:
+            self.product_price = product_price_element.text.strip()
+
+class WirecutterScraper(ReviewScraper):
+    def scrape(self):
+        query = f"wirecutter best {self.name}"
+
+        for url in search(query, tld="co.in", num=10, stop=1, pause=2):
+            wirecutter_url = url
+
+        response = requests.get(wirecutter_url)
+        soup = BeautifulSoup(response.text, 'lxml')
+
+        product_name_element = soup.find('h3', class_='d73f30a8 _12e81b7a _18247845')
+        product_price_element = soup.find('div', class_='_24c5e6a6 product-pricebox-1')
+
+        if product_name_element:
+            self.best_product = product_name_element.text.strip()
+
+        if product_price_element:
+            self.product_price = product_price_element.text.strip()
 
 class ProductSearch:
-    def __init__(self, product_name, nymag_url='https://nymag.com/strategist/article/{}.html'):
-        self.product_name = product_name
-        self.nymag_url = nymag_url
-        self.options = webdriver.ChromeOptions()
-        self.options.add_argument('--headless')
-        self.options.add_argument('--incognito')
-        self.options.add_argument('--ignore-certificate-errors')
-        self.driver = webdriver.Chrome(options=self.options)
+    def __init__(self, name):
+        self.name = name
+        self.nymag_scraper = NymagScraper(name, "NY Mag")
+        self.wirecutter_scraper = WirecutterScraper(name, "Wirecutter")
 
-    def data_search(self, url, selector):
-        self.driver.get(url)
-        source_code = self.driver.page_source
-        soup = BeautifulSoup(source_code, 'html5lib')
-        span_tag = soup.select_one(selector)
+    def search(self):
+        self.nymag_scraper.scrape()
+        self.wirecutter_scraper.scrape()
 
-        if span_tag is not None:
-            return span_tag.text.strip()
-        else:
-            print(f"Error: Element with selector '{selector}' not found on the page.")
-            return None  # Or any other value or action you want to take in case of an error
+    def display_info(self):
+        print(f"Product: {self.name}")
+        self.nymag_scraper.display_info()
+        self.wirecutter_scraper.display_info()
 
-
-    def nymag_search(self):
-        nymag_product_name = self.data_search(self.nymag_url.format(self.product_name), 'a.product-buy-link span')
-        self.save_results(nymag_product_name)
-
-    def save_results(self, product_name):
-        df = pd.DataFrame({'Product Name': [product_name]})
-        try:
-            df.to_excel(r'C:\Users\12078\OneDrive\Desktop\product_list.xlsx', index=False)
-            print("Data has been successfully saved to the Excel file.")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-        self.driver.quit()
-
-# Example usage:
-user_input = input("Enter the product name: ")
-product_search = ProductSearch(user_input)
-product_search.nymag_search()
-
+product_name = input("Enter a product name: ")
+product_search = ProductSearch(product_name)
+product_search.search()
+product_search.display_info()
