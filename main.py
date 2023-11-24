@@ -1,4 +1,4 @@
-import requests  
+import requests
 from bs4 import BeautifulSoup
 from googlesearch import search
 
@@ -9,13 +9,29 @@ class ReviewScraper:
         self.best_product = None
         self.product_price = None
 
-    def scrape(self):
-        raise NotImplementedError("Subclass must implement abstract method")
+    def scrape(self, HTML_name_element, HTML_name_class, HTML_price_element, HTML_price_class):
+        query = f"{self.website} best {self.name}"
+
+        for url in search(query, tld="co.in", num=10, stop=1, pause=2):
+            _url = url
+
+        response = requests.get(_url)
+        soup = BeautifulSoup(response.text, 'lxml')
+
+        product_name_element = soup.find(HTML_name_element, class_=HTML_name_class)
+        product_price_element = soup.find(HTML_price_element, class_=HTML_price_class)
+
+        if product_name_element:
+            self.best_product = product_name_element.text.strip()
+
+        if product_price_element:
+            self.product_price = product_price_element.text.strip()
 
     def display_info(self):
         if self.best_product is not None:
             first_line = self.best_product.split('\n')[0]
-            print(f"According to {self.website}: {first_line}")
+            according_line = f"According to {self.website}: {first_line}"
+            print(according_line)
         else:
             print(f"No information found on {self.website}")
         if self.product_price is not None:
@@ -25,37 +41,15 @@ class ReviewScraper:
 
 class NymagScraper(ReviewScraper):
     def scrape(self):
-        nymag_url = f'https://nymag.com/strategist/article/best-{self.name}.html'
-        response = requests.get(nymag_url)
-        soup = BeautifulSoup(response.text, 'lxml')
-
-        product_name_element = soup.find('div', class_='product-name')
-        product_price_element = soup.find('span', class_='product-buy-price')
-
-        if product_name_element:
-            self.best_product = product_name_element.text.strip()
-
-        if product_price_element:
-            self.product_price = product_price_element.text.strip()
+        super().scrape('div', 'product-name', 'span', 'product-buy-price')
 
 class WirecutterScraper(ReviewScraper):
     def scrape(self):
-        query = f"wirecutter best {self.name}"
+        super().scrape('h3', '_12e81b7a', 'div', '_24c5e6a6 product-pricebox-1')
 
-        for url in search(query, tld="co.in", num=10, stop=1, pause=2):
-            wirecutter_url = url
-
-        response = requests.get(wirecutter_url)
-        soup = BeautifulSoup(response.text, 'lxml')
-
-        product_name_element = soup.find('h3', class_='d73f30a8 _12e81b7a _18247845')
-        product_price_element = soup.find('div', class_='_24c5e6a6 product-pricebox-1')
-
-        if product_name_element:
-            self.best_product = product_name_element.text.strip()
-
-        if product_price_element:
-            self.product_price = product_price_element.text.strip()
+class ConsumerReportsScraper(ReviewScraper):
+    def scrape(self):
+        
 
 class ProductSearch:
     def __init__(self, name):
