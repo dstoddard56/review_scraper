@@ -3,8 +3,8 @@ from bs4 import BeautifulSoup
 from googlesearch import search
 import tkinter as tk
 from tkinter import Label, Entry, Button, StringVar, END, Text
-from openpyxl import Workbook
-import os
+#from openpyxl import Workbook
+#import os
 
 class ReviewScraper:
     def __init__(self, name, website):
