@@ -1,0 +1,22 @@
+    def write_to_excel(self, product_name, result_text, directory):
+        workbook = Workbook()
+        sheet = workbook.active
+
+        # Write headers
+        sheet['A1'] = 'Website'
+        sheet['B1'] = 'Product Name'
+        sheet['C1'] = 'Information'
+        sheet['D1'] = 'Price'
+
+        # Extract information from result_text (customize as needed)
+        # For example, assuming result_text is in the format: "According to website: Info\nPrice: $X.XX"
+        website_info = result_text.split(":")[0].strip()
+        information = result_text.split(":")[1].split("\n")[0].strip()
+        price_info = result_text.split(":")[1].split("\n")[1].strip() if "\n" in result_text.split(":")[1] else ""
+
+        # Write data
+        sheet.append([website_info, product_name, information, price_info])
+
+        # Save the workbook with a specific directory
+        excel_filename = os.path.join(directory, f"{product_name}_info.xlsx")
+        workbook.save(excel_filename)
