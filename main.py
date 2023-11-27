@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from googlesearch import search
 import tkinter as tk
 from tkinter import Label, Entry, Button, StringVar, END, Text
+import requests
 
 class ReviewScraper:
     def __init__(self, name, website):
