@@ -8,6 +8,11 @@ import threading
 import pandas as pd
 
 class ReviewScraper:
+    #define dictionary for use w/pandas
+    base_dictionary = {
+        'Name': None, 'Website': None, 'Best Product': None, 'Product Price': None, 'URL': None
+    }
+
     def __init__(self, name, website):
         self.name = name
         self.website = website
@@ -50,51 +55,79 @@ class ReviewScraper:
             info += f"Link: {self.url}\n"
 
         return info
+    
+    def to_dict(self):
+        scraper_dict = self.base_dict.copy()  # Create a copy to avoid modifying the class attribute
+        scraper_dict.update({
+            'Name': self.name,
+            'Website': self.website,
+            'Best Product': self.best_product,
+            'Product Price': self.product_price,
+            'URL': self.url
+        })
+        return scraper_dict
 
 class NymagScraper(ReviewScraper):
     def scrape(self):
         super().scrape('div', 'product-name', 'span', 'product-buy-price')
+    
+    def to_dict(self):
+        base_dictionary = super().to_dict()
 
 class WirecutterScraper(ReviewScraper):
     def scrape(self):
         super().scrape('h3', '_12e81b7a', 'div', '_24c5e6a6 product-pricebox-1')
 
+    def to_dict(self):
+        base_dictionary = super().to_dict()
+
 class BestProductsScraper(ReviewScraper):
     def scrape(self):
         super().scrape('h2', 'css-1s0pzvh e8seki10', 'div', 'size-large css-1srh9ry e1a1omje0')
+
+    def to_dict(self):
+        base_dictionary = super().to_dict()
 
 class ForbesScraper(ReviewScraper):
     def scrape(self):
         super().scrape('h3', 'finds-module-title', 'div', 'fbs-pricing__regular-price')
 
+    def to_dict(self):
+        base_dictionary = super().to_dict()
+
 class CNETScraper(ReviewScraper):
     def scrape(self):
         super().scrape('div', 'c-shortcodeListiclePrecapItem_title g-text-bold g-text-xxsmall', 'div', 'c-shortcodeListiclePrecapItem_button o-button o-button-small o-button-smallRound o-button-secondary')
-                               
+
+    def to_dict(self):
+        base_dictionary = super().to_dict()
+
 class ProductSearch:
     def __init__(self, name):
         self.name = name
-        self.wirecutter_scraper = WirecutterScraper(name, "Wirecutter")
-        self.best_products_scraper = BestProductsScraper(name, "bestproducts.com")
-        self.forbes_scraper = ForbesScraper(name, "Forbes")
-        self.nymag_scraper = NymagScraper(name, "NY Mag")
-        self.cnet_scraper = CNETScraper(name, "CNET")
+        self.review_scrapers = [
+            WirecutterScraper(name, "Wirecutter"),
+            BestProductsScraper(name, "bestproducts.com"),
+            ForbesScraper(name, "Forbes"),
+            NymagScraper(name, "NY Mag"),
+            CNETScraper(name, "CNET")
+        ]
 
+    
     def search(self):
-        self.wirecutter_scraper.scrape()
-        self.best_products_scraper.scrape()
-        self.forbes_scraper.scrape()
-        self.nymag_scraper.scrape()
-        self.cnet_scraper.scrape()
+        for scraper in self.review_scrapers:
+            scraper.scrape()
 
-    def get_display_info(self):
+    def store_results_as_dictionary(self):
+        return [scraper.to_dict() for scraper in self.review_scrapers]
+    
+
+    def display_info(self):
         result = f"Product: {self.name}\n"
-        result += self.wirecutter_scraper.display_info() + "\n"
-        result += self.best_products_scraper.display_info() + "\n"
-        result += self.forbes_scraper.display_info() + "\n"
-        result += self.nymag_scraper.display_info() + "\n"
-        result += self.cnet_scraper.display_info()
+        for scraper in self.review_scrapers:
+            result += scraper.display_info() + "\n"
         return result
+
 
 class ProductSearchGUI:
     def __init__(self, master):
@@ -103,7 +136,7 @@ class ProductSearchGUI:
 
         self.master = master
         master.title("Product Review Scraper")
-        master.geometry("500x250")
+        master.geometry("500x275")
 
         self.label = ttk.Label(master, text="Enter a product name:")
         self.label.pack()
@@ -112,19 +145,26 @@ class ProductSearchGUI:
         self.entry.pack()
         self.entry.focus()
 
-        self.result_text = Text(master, height=10, width=85)
+        self.result_text = Text(master, height=10, width=100)
         self.result_text.pack()
 
         self.search_button = ttk.Button(master, text="Search", command=self.search_threading)
         self.search_button.pack()
 
-        #self.export_button = ttk.Button(master, text="Export Results", command=self.export_results)
-        #self.export_button.pack()
+        self.export_button = ttk.Button(master, text="Export Results", command=self.export_results)
+        self.export_button.pack()
 
         self.progress_bar = ttk.Progressbar(master, orient=HORIZONTAL, length=200, mode='indeterminate')
         self.progress_bar.pack()
 
-    #def export_results(self):
+    def export_results(self):
+        product_name = self.entry.get()
+        product_search = ProductSearch(product_name)
+        product_search.search()
+        results = product_search.store_results_as_dictionary()
+        df = pd.DataFrame(results)
+        df.to_csv('product_search_results.csv')
+        print("Results Exported")
         
     def search_threading(self):
         product_name = self.entry.get()
@@ -142,7 +182,7 @@ class ProductSearchGUI:
     def update_gui(self, product_search):
         self.progress_bar.stop()
         self.result_text.delete(1.0, tk.END)
-        result_text = product_search.get_display_info()
+        result_text = product_search.display_info()
         self.result_text.insert(tk.END, result_text)
 
 root = tk.Tk()
