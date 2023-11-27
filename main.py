@@ -1,10 +1,11 @@
 from bs4 import BeautifulSoup
 import requests
 from googlesearch import search
-#import sqlite3
 import tkinter as tk
-from tkinter import Label, Entry, Button, StringVar, END, Text
-#import os
+from tkinter import *
+from tkinter import ttk
+import threading
+import pandas as pd
 
 class ReviewScraper:
     def __init__(self, name, website):
@@ -97,39 +98,54 @@ class ProductSearch:
 
 class ProductSearchGUI:
     def __init__(self, master):
+        style = ttk.Style()
+        style.theme_use('alt')
+
         self.master = master
         master.title("Product Review Scraper")
-
         master.geometry("500x250")
 
-        self.label = Label(master, text="Enter a product name:")
+        self.label = ttk.Label(master, text="Enter a product name:")
         self.label.pack()
 
-        self.entry = Entry(master)
+        self.entry = ttk.Entry(master)
         self.entry.pack()
+        self.entry.focus()
 
         self.result_text = Text(master, height=10, width=85)
         self.result_text.pack()
 
-        self.search_button = Button(master, text="Search", command=self.search_and_display)
+        self.search_button = ttk.Button(master, text="Search", command=self.search_threading)
         self.search_button.pack()
 
-    def search_and_display(self):
+        #self.export_button = ttk.Button(master, text="Export Results", command=self.export_results)
+        #self.export_button.pack()
+
+        self.progress_bar = ttk.Progressbar(master, orient=HORIZONTAL, length=200, mode='indeterminate')
+        self.progress_bar.pack()
+
+    #def export_results(self):
+        
+    def search_threading(self):
         product_name = self.entry.get()
+        self.progress_bar.start()
+        search_thread = threading.Thread(target=self.search_and_display, args=(product_name,))
+        search_thread.start()
+
+    def search_and_display(self, product_name):
         product_search = ProductSearch(product_name)
         product_search.search()
 
-        #Clear previous results
-        self.result_text.delete(1.0, tk.END)
+        # Use the after method to update the GUI on the main thread
+        self.master.after(0, lambda: self.update_gui(product_search))
 
-        # Display results in the Text widget
+    def update_gui(self, product_search):
+        self.progress_bar.stop()
+        self.result_text.delete(1.0, tk.END)
         result_text = product_search.get_display_info()
         self.result_text.insert(tk.END, result_text)
 
-        
-# Create the main window
 root = tk.Tk()
 app = ProductSearchGUI(root)
 
-# Run the Tkinter event loop
 root.mainloop()
