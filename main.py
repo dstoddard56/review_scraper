@@ -1,4 +1,6 @@
 from bs4 import BeautifulSoup
+import subprocess
+subprocess.run(["pip", "install", "googlesearch-python"])
 from googlesearch import search
 import tkinter as tk
 from tkinter import Label, Entry, Button, StringVar, END, Text
@@ -121,9 +123,6 @@ class ProductSearchGUI:
         result_text = product_search.get_display_info()
         self.result_text.insert(tk.END, result_text)
 
-        '''
-        self.write_to_excel(product_name, result_text, r'C:\Users\12078\OneDrive\Documents')
-        '''
         
 # Create the main window
 root = tk.Tk()
