@@ -1,8 +1,10 @@
 from bs4 import BeautifulSoup
+import requests
 from googlesearch import search
+#import sqlite3
 import tkinter as tk
 from tkinter import Label, Entry, Button, StringVar, END, Text
-import requests
+#import os
 
 class ReviewScraper:
     def __init__(self, name, website):
@@ -10,14 +12,15 @@ class ReviewScraper:
         self.website = website
         self.best_product = None
         self.product_price = None
+        self.url = None
 
     def scrape(self, HTML_name_element, HTML_name_class, HTML_price_element, HTML_price_class):
         query = f"{self.website} best {self.name}"
 
         for url in search(query, tld="co.in", num=10, stop=1, pause=2):
-            _url = url
+            self.url = url
 
-        response = requests.get(_url)
+        response = requests.get(self.url)
         soup = BeautifulSoup(response.text, 'lxml')
 
         product_name_element = soup.find(HTML_name_element, class_=HTML_name_class)
@@ -28,6 +31,7 @@ class ReviewScraper:
 
         if product_price_element:
             self.product_price = product_price_element.text.strip()
+
 
     def display_info(self):
         info = ""
@@ -41,6 +45,8 @@ class ReviewScraper:
             info += f"Price: {self.product_price}\n"
         else:
             info += "No price information available\n"
+        if self.url is not None:
+            info += f"Link: {self.url}\n"
 
         return info
 
@@ -62,8 +68,8 @@ class ForbesScraper(ReviewScraper):
 
 class CNETScraper(ReviewScraper):
     def scrape(self):
-        super().scrape('div', 'c-shortcodeListiclePrecapItem_title g-text-xxsmall u-inline', 'div', 'c-shortcodeListiclePrecapItem_button o-button o-button-small o-button-smallRound o-button-secondary')
-
+        super().scrape('div', 'c-shortcodeListiclePrecapItem_title g-text-bold g-text-xxsmall', 'div', 'c-shortcodeListiclePrecapItem_button o-button o-button-small o-button-smallRound o-button-secondary')
+                               
 class ProductSearch:
     def __init__(self, name):
         self.name = name
