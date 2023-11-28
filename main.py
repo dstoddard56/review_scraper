@@ -7,6 +7,7 @@ from tkinter import ttk
 import threading
 import pandas as pd
 import webbrowser
+import os
 
 class ReviewScraper:
     def __init__(self, name, website):
@@ -66,7 +67,8 @@ class NymagScraper(ReviewScraper):
 class WirecutterScraper(ReviewScraper):
     def scrape(self):
         super().scrape('h3', '_12e81b7a', 'div', '_24c5e6a6 product-pricebox-1')
-'''
+
+'''      
 class BestProductsScraper(ReviewScraper):
     def scrape(self):
         query = f"{self.website} best {self.name}"
@@ -85,6 +87,7 @@ class BestProductsScraper(ReviewScraper):
         if product_price_element:
             self.product_price = product_price_element.text.strip()
 '''
+
 class ForbesScraper(ReviewScraper):
     def scrape(self):
         super().scrape('h3', 'finds-module-title', 'div', 'fbs-pricing__regular-price')
