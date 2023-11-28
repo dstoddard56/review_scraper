@@ -90,7 +90,7 @@ class BestProductsScraper(ReviewScraper):
 
 class ForbesScraper(ReviewScraper):
     def scrape(self):
-        super().scrape('h3', 'finds-module-title', 'div', 'fbs-pricing__regular-price')
+        super().scrape('h3', 'finds-module-title', 'a', 'fbs-pricing__regular-price')
 
 class CNETScraper(ReviewScraper):
     def scrape(self):
