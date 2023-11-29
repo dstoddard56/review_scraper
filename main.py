@@ -66,7 +66,7 @@ class NymagScraper(ReviewScraper):
 
 class WirecutterScraper(ReviewScraper):
     def scrape(self):
-        super().scrape('h3', '_12e81b7a', 'div', '_24c5e6a6 product-pricebox-1')
+        super().scrape('h3', 'd557a252 _58f66712 _2207384a', 'div', '_3f86a6a2 product-pricebox-0')
 
 '''      
 class BestProductsScraper(ReviewScraper):
