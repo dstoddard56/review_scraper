@@ -18,9 +18,22 @@ class ReviewScraper:
         self.best_product = None
         self.product_price = None
         self.url = None
+        
+    #caching results in a dictionary 
+    _cache = {}
 
     #scraping method makes google search of "{name of website} best {user-inputted product}" and returns the url of the first result
     def scrape(self, HTML_name_element, HTML_name_class, HTML_price_element, HTML_price_class, string = None):
+        '''
+        #check cache for requested product
+        if self.url in ReviewScraper._cache:
+            print("Retreiving cached data for", self.url)
+            result = ReviewScraper._cache[self.url]
+            self.best_product = result['best_product']
+            self.product_price = result['product_price']
+            return
+        '''
+        
         query = f"{self.website} best {self.name}"
         for url in search(query, tld="co.in", num=10, stop=1, pause=2):
             self.url = url
@@ -42,6 +55,9 @@ class ReviewScraper:
         #same for price element
         if product_price_element:
             self.product_price = product_price_element.text.strip()
+        
+        #store scraped info in cache
+        #ReviewScraper._cache[self.url] = {'best_product': self.best_product, 'product_price': self.product_price}
     
     #display info method displays the information found in the scrape method
     def display_info(self):
@@ -66,7 +82,7 @@ class ReviewScraper:
     #throw extracted information into a dictionary
     def to_dict(self):
         return {
-            'Name': self.name,
+            'Product': self.name,
             'Website': self.website,
             'Best Product': self.best_product,
             'Product Price': self.product_price,
@@ -80,7 +96,7 @@ class NymagScraper(ReviewScraper):
 
 class WirecutterScraper(ReviewScraper):
     def scrape(self):
-        super().scrape('h3', '_12163943 _9c0279ae _15ef9562', 'div', '_3763c078 product-pricebox-0')
+        super().scrape('h3', '_908e815b e4c36628 bef5fbd9', 'div', '_6f5d0646 product-pricebox-0')
 
 #this website's formatting is inconsistent, so if the first element is not found check the next
 class BestProductsScraper(ReviewScraper):
