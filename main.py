@@ -38,7 +38,7 @@ class ReviewScraper:
         info = ""
         if self.best_product is not None:
             first_line = self.best_product.split('\n')[0]
-            info += f"According to {self.website}: {first_line}\n"
+            info += f"Best {self.name} according to {self.website}: {first_line}\n"
         else:
             info += f"No information found on {self.website}\n"
 
@@ -66,9 +66,9 @@ class NymagScraper(ReviewScraper):
 
 class WirecutterScraper(ReviewScraper):
     def scrape(self):
-        super().scrape('h3', 'd557a252 _58f66712 _2207384a', 'div', '_3f86a6a2 product-pricebox-0')
+        super().scrape('h3', '_12163943 _9c0279ae _15ef9562', 'div', '_3763c078 product-pricebox-0')
 
-'''      
+   
 class BestProductsScraper(ReviewScraper):
     def scrape(self):
         query = f"{self.website} best {self.name}"
@@ -78,7 +78,7 @@ class BestProductsScraper(ReviewScraper):
         response = requests.get(self.url)
         soup = BeautifulSoup(response.text, 'lxml')
 
-        product_name_element = soup.find('div', string='Best Overall')
+        product_name_element = soup.find('li', string='Best Overall')
         product_price_element = soup.find('div', class_='size-large css-1srh9ry e1a1omje0')
 
         if product_name_element:
@@ -86,12 +86,16 @@ class BestProductsScraper(ReviewScraper):
 
         if product_price_element:
             self.product_price = product_price_element.text.strip()
-'''
+
 
 class ForbesScraper(ReviewScraper):
     def scrape(self):
-        super().scrape('h3', 'finds-module-title', 'a', 'fbs-pricing__regular-price')
-
+        super().scrape('h3', 'finds-module-title', 'span', 'fbs-pricing__regular-price')
+'''
+class Underscored(ReviewScraper):
+    def scrape(self):
+        super().scrape('h3', 'cuisinart-chefs-convection-toaster-oven-tob-260n1', 'div', 'product-card__button-area')
+'''
 class CNETScraper(ReviewScraper):
     def scrape(self):
         super().scrape('h4', 'c-bestListProductListing_hed g-text-bold', 'div', 'c-shortcodeListiclePrecapItem_button o-button o-button-small o-button-smallRound o-button-secondary')
@@ -104,10 +108,11 @@ class ProductSearch:
         self.name = name
         self.review_scrapers = [
             WirecutterScraper(name, "Wirecutter"),
-            #BestProductsScraper(name, "bestproducts.com"),
             ForbesScraper(name, "Forbes"),
             NymagScraper(name, "NY Mag"),
-            CNETScraper(name, "CNET")
+            CNETScraper(name, "CNET"),
+            BestProductsScraper(name, "bestproducts.com")
+            #Underscored(name, "CNN")
         ]
 
     def search(self):
@@ -130,16 +135,21 @@ class ProductSearchGUI:
 
         self.master = master
         master.title("Product Review Scraper")
-        master.geometry("750x275")
+        master.geometry("750x450")
 
         self.label = ttk.Label(master, text="Enter a product name:")
         self.label.pack()
-
+        
+        '''
+        self.message = ttk.Label(master, text="")
+        self.message.pack()
+        '''
+        
         self.entry = ttk.Entry(master)
         self.entry.pack()
         self.entry.focus()
 
-        self.result_text = tk.Text(master, height=10, width=100, wrap='word')
+        self.result_text = tk.Text(master, height=20, width=100, wrap='word')
         self.result_text.pack()
 
         self.search_button = ttk.Button(master, text="Search", command=self.search_threading)
@@ -173,9 +183,13 @@ class ProductSearchGUI:
     def search_threading(self):
         product_name = self.entry.get()
         self.progress_bar.start()
+        #self.update_message("Searching in progress...")
         search_thread = threading.Thread(target=self.search_and_display, args=(product_name,))
         search_thread.start()
-
+    '''   
+    def update_message(self, message):
+        self.message.config(text=message)
+    '''
     def search_and_display(self, product_name):
         product_search = ProductSearch(product_name)
         product_search.search()
