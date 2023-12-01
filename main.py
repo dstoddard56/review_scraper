@@ -24,7 +24,9 @@ class ReviewScraper:
 
     #scraping method makes google search of "{name of website} best {user-inputted product}" and returns the url of the first result
     def scrape(self, HTML_name_element, HTML_name_class, HTML_price_element, HTML_price_class, string = None):
+        
         '''
+        NOT WORKING
         #check cache for requested product
         if self.url in ReviewScraper._cache:
             print("Retreiving cached data for", self.url)
@@ -97,35 +99,22 @@ class NymagScraper(ReviewScraper):
 class WirecutterScraper(ReviewScraper):
     def scrape(self):
         super().scrape('h3', '_908e815b e4c36628 bef5fbd9', 'div', '_6f5d0646 product-pricebox-0')
+        
 
-#this website's formatting is inconsistent, so if the first element is not found check the next
 class BestProductsScraper(ReviewScraper):
     def scrape(self):
-        query = f"{self.website} best {self.name}"
-        for url in search(query, tld="co.in", num=10, stop=1, pause=2):
-            self.url = url
-
-        response = requests.get(self.url)
-        soup = BeautifulSoup(response.text, 'lxml')
-
-        product_name_element = soup.find('li', string='Best Overall')
-        product_price_element = soup.find('div', class_='size-large css-1srh9ry e1a1omje0')
-
-        if product_name_element:
-            self.best_product = product_name_element.text.strip()
-
-        if product_price_element:
-            self.product_price = product_price_element.text.strip()
+        super().scrape('div', 'css-1f1nsoy eyaokey2', 'div', '_6f5d0646 product-pricebox-0')
 
 
 class ForbesScraper(ReviewScraper):
     def scrape(self):
-        super().scrape('h3', 'finds-module-title', 'span', 'fbs-pricing__regular-price')
+        super().scrape('h3', 'finds-module-title', 'div', 'embed-base finds-embed')
 '''
 class Underscored(ReviewScraper):
     def scrape(self):
         super().scrape('h3', 'cuisinart-chefs-convection-toaster-oven-tob-260n1', 'div', 'product-card__button-area')
 '''
+#this website's formatting is inconsistent, so if the first element is not found check the next
 class CNETScraper(ReviewScraper):
     def scrape(self):
         super().scrape('h4', 'c-bestListProductListing_hed g-text-bold', 'div', 'c-shortcodeListiclePrecapItem_button o-button o-button-small o-button-smallRound o-button-secondary')
@@ -172,7 +161,7 @@ class ProductSearchGUI:
         #initialize GUI window with specified title and size
         self.master = master
         master.title("Product Review Scraper")
-        master.geometry("750x450")
+        master.geometry("1000x600")
 
         #creates and packs a label for the user entry textbox
         self.label = ttk.Label(master, text="Enter a product name:")
@@ -189,7 +178,7 @@ class ProductSearchGUI:
         self.entry.focus()
 
         #defining size and configuration of box where results are displayed
-        self.result_text = tk.Text(master, height=20, width=100, wrap='word')
+        self.result_text = tk.Text(master, height=30, width=150, wrap='word')
         self.result_text.pack()
 
         #defining "search" button. The button command runs the search_threading method
