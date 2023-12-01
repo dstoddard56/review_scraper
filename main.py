@@ -19,8 +19,8 @@ class ReviewScraper:
         self.product_price = None
         self.url = None
         
-    #caching results in a dictionary 
-    _cache = {}
+    #caching results in a dictionary (not working)
+    #_cache = {}
 
     #scraping method makes google search of "{name of website} best {user-inputted product}" and returns the url of the first result
     def scrape(self, HTML_name_element, HTML_name_class, HTML_price_element, HTML_price_class, string = None):
